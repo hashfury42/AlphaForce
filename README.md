@@ -2,15 +2,16 @@
 ![image](https://github.com/hashfury42/AlphaForce/blob/master/alphaforce.png)
 # AlphaForce
 AlphaForce is a deep reinforcement learning tool based on pytorch.
+AlphaForce realizes modular design, which is simple and easy to use.
 
 ## Project Structure
 
 
+## Citing
 
-Citing
-If you use AlphaForce in your research, you can cite it as follows:
-
-@misc{AlphaForce-2019,
+If you use `AlphaForce` in your research, you can cite it as follows:
+```bibtex
+@misc{AlphaForce2019,
     author = {Xuekun Zhuang},
     title = {AlphaForce},
     year = {2019},
@@ -18,3 +19,4 @@ If you use AlphaForce in your research, you can cite it as follows:
     journal = {GitHub repository},
     howpublished = {\url{https://github.com/hashfury42/AlphaForce}},
 }
+```
