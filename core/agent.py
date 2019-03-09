@@ -14,7 +14,8 @@ class Agent(object):
     - `save_model`
 
     Args
-        processor (`Processor` instance): See [Processor](#processor) for details.
+        model
+        processor
     """
     __metaclass__ = abc.ABCMeta
 
