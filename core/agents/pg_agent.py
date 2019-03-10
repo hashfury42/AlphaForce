@@ -2,21 +2,26 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import gym
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 from core.agent import Agent
+from core.memory import PolicyMemory
+from core.processor import RewardProcessor
+
+
+# reference
+# https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
 
 
 class PGModel(nn.Module):
-    def __init__(self):
+    def __init__(self, input_dim=0, output_dim=0):
         super(PGModel, self).__init__()
-        self.affine1 = nn.Linear(4, 128)
+        self.affine1 = nn.Linear(input_dim, 64)
         self.dropout = nn.Dropout(p=0.6)
-        self.affine2 = nn.Linear(128, 2)
+        self.affine2 = nn.Linear(64, output_dim)
         self.saved_log_probs = []
         self.rewards = []
 
@@ -32,49 +37,58 @@ class PGAgent(Agent):
     """The basic Vanilla REINFORCE agent.
 
     """
+
     def __init__(self, gamma=0.99, **kwargs):
         super(PGAgent, self).__init__(**kwargs)
         self._gamma = gamma
+        self.optimizer = optim.Adam(pg_model.parameters(), lr=1e-2)
 
     def generate_action(self, observation):
         state = torch.from_numpy(observation).float().unsqueeze(0)
         prob_list = self._model.predict(state)
         m = Categorical(prob_list)
         action = m.sample()
-        self._model.saved_log_probs.append(m.log_prob(action))
+        self._memory.log_probs.append(m.log_prob(action))
         return action.item()
 
     def train_model(self):
-        R = 0
+        # prepare train data
         policy_loss = []
-        returns = []
-        optimizer = optim.Adam(pg_model.parameters(), lr=1e-2)
-        eps = np.finfo(np.float32).eps.item()
-        for r in self._model.rewards[::-1]:
-            R = r + self._gamma * R
-            returns.insert(0, R)
-        returns = torch.tensor(returns)
-        returns = (returns - returns.mean()) / (returns.std() + eps)
-        for log_prob, R in zip(self._model.saved_log_probs, returns):
-            policy_loss.append(-log_prob * R)
-        optimizer.zero_grad()
+        self._memory.generate_batch(self._memory.capacity)
+        returns = \
+            self._processor.get_discounted_rewards(self._memory.batch.reward, gamma=0.99)
+        for log_prob, reward in zip(self._memory.log_probs, returns):
+            policy_loss.append(-log_prob * reward)
+
+        # train ...
+        self.optimizer.zero_grad()
         policy_loss = torch.cat(policy_loss).sum()
         policy_loss.backward()
-        optimizer.step()
-        del self._model.rewards[:]
-        del self._model.saved_log_probs[:]
+        self.optimizer.step()
+
+        # clean the memory
+        self._memory.reset()
 
 
 if __name__ == "__main__":
-
-    # The model for Vanilla PGAgent
-    pg_model = PGModel()
-
     # The environment for the agent
     env = gym.make('CartPole-v1')
     env.seed(42)
     torch.manual_seed(42)
 
+    # The model for Vanilla PGAgent
+    pg_model = PGModel(input_dim=env.observation_space.shape[0],
+                       output_dim=env.action_space.n)
+    # The memory
+    memory = PolicyMemory(10000)
+
+    # The processor
+    processor = RewardProcessor()
+
     # pg agent
-    agent = PGAgent(gamma=0.99, model=pg_model, processor=None)
-    agent.fit(env, 1000, 10000, 10)
+    agent = PGAgent(gamma=0.99,
+                    model=pg_model,
+                    processor=processor,
+                    memory=memory)
+
+    agent.fit(env, n_episode=1000, n_max_actions=10000, is_render=False, log_interval=10)
