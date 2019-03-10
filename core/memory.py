@@ -62,7 +62,7 @@ class PolicyMemory(Memory):
 
 
 class ReplayMemory(Memory):
-    """Memory for Model based methods.
+    """Memory for Model based methods, such as DQN.
     """
 
     def __init__(self, capacity, **kwargs):

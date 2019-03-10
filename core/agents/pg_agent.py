@@ -25,7 +25,7 @@ class PGModel(nn.Module):
         self.saved_log_probs = []
         self.rewards = []
 
-    def predict(self, x):
+    def forward(self, x):
         x = self.affine1(x)
         x = self.dropout(x)
         x = F.relu(x)
@@ -45,7 +45,7 @@ class PGAgent(Agent):
 
     def generate_action(self, observation):
         state = torch.from_numpy(observation).float().unsqueeze(0)
-        prob_list = self._model.predict(state)
+        prob_list = self._model.forward(state)
         m = Categorical(prob_list)
         action = m.sample()
         self._memory.log_probs.append(m.log_prob(action))
@@ -68,6 +68,10 @@ class PGAgent(Agent):
 
         # clean the memory
         self._memory.reset()
+
+    def _on_episode_begin(self, env):
+        state_current, ep_reward, state_anchor = env.reset(), 0, None
+        return state_current, ep_reward, state_anchor
 
 
 if __name__ == "__main__":

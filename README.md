@@ -4,6 +4,12 @@
 AlphaForce is a deep reinforcement learning tool based on pytorch.
 AlphaForce realizes modular design, which is simple and easy to use.
 
+
+## Implemented Algorithms
+
+### Policy Gradient (Vanilla)
+
+
 ## Project Structure
 
 
