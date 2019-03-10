@@ -1,22 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import numpy as np
 import gym
 import math
 import random
-import matplotlib
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.distributions import Categorical
 from core.agent import Agent
 from core.memory import ReplayMemory
 from core.config import device
 from core.processor import CartPoleObservationProcessor
 from core.model import Model
 
+
+# reference
+# https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
 class DQN(nn.Module):
 
@@ -49,14 +49,14 @@ class DQN(nn.Module):
 
 
 class DQNModel(Model):
-    
+
     def __init__(self, h, w):
         self.policy_net = DQN(h, w).to(device)
         self.target_net = DQN(h, w).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         self.optimizer = optim.RMSprop(self.policy_net.parameters())
-        
+
 
 class DQNAgent(Agent):
 
@@ -94,8 +94,8 @@ class DQNAgent(Agent):
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                                 self._memory.batch.next_state)),
                                       device=device, dtype=torch.uint8)
-        non_final_next_states = torch.cat([s for s in self._memory.batch.next_state
-                                           if s is not None])
+        non_final_next_states = \
+            torch.cat([s for s in self._memory.batch.next_state if s is not None])
         state_batch = torch.cat(self._memory.batch.state)
         action_batch = torch.cat(self._memory.batch.action)
         reward_batch = torch.cat(self._memory.batch.reward)
@@ -151,7 +151,7 @@ class DQNAgent(Agent):
             state_next = None
         state_anchor = current_screen
         return state_next, reward, done, state_anchor
-    
+
 
 if __name__ == "__main__":
     # The processor

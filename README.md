@@ -23,6 +23,6 @@ If you use `AlphaForce` in your research, you can cite it as follows:
     year = {2019},
     publisher = {GitHub},
     journal = {GitHub repository},
-    howpublished = {https://github.com/hashfury42/AlphaForce},
+    howpublished = {\url{https://github.com/hashfury42/AlphaForce}},
 }
 ```
