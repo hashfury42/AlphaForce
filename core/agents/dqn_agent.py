@@ -3,6 +3,7 @@
 import gym
 import math
 import random
+import traceback
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
@@ -163,8 +164,8 @@ if __name__ == "__main__":
         from pyvirtualdisplay import Display
         display = Display(visible=0, size=(1400, 900))
         display.start()
-    except:
-        pass
+    except Exception, e:
+        traceback.print_exc()
 
     plt.ion()
     env = gym.make('CartPole-v0').unwrapped
