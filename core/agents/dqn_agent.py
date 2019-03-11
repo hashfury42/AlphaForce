@@ -18,6 +18,7 @@ from core.model import Model
 # reference
 # https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
+
 class DQN(nn.Module):
 
     def __init__(self, h, w):
@@ -158,6 +159,13 @@ if __name__ == "__main__":
     processor = CartPoleObservationProcessor()
 
     # The environment for the agent
+    try:
+        from pyvirtualdisplay import Display
+        display = Display(visible=0, size=(1400, 900))
+        display.start()
+    except:
+        pass
+
     plt.ion()
     env = gym.make('CartPole-v0').unwrapped
     env.seed(42)

@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # The processor
     processor = RewardProcessor()
 
-    # pg agent
+    # PG agent
     agent = PGAgent(gamma=0.99,
                     model=pg_model,
                     processor=processor,
