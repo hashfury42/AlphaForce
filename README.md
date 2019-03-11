@@ -8,6 +8,7 @@ AlphaForce realizes modular design, which is simple and easy to use.
 ## Implemented Algorithms
 
 ### Policy Gradient (Vanilla)
+### DQN
 
 
 ## Project Structure
