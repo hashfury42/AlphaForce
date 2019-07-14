@@ -45,12 +45,12 @@ class Memory(object):
         return len(self.memory)
 
 
-class PolicyMemory(Memory):
+class PGMemory(Memory):
     """Memory for Policy Gradients methods.
     """
 
-    def __init__(self, capacity, **kwargs):
-        super(PolicyMemory, self).__init__(capacity)
+    def __init__(self, capacity):
+        super(PGMemory, self).__init__(capacity)
         self.log_probs = []
 
     def push(self, *args):
@@ -61,12 +61,12 @@ class PolicyMemory(Memory):
         self.log_probs = []
 
 
-class ReplayMemory(Memory):
+class DQNMemory(Memory):
     """Memory for Model based methods, such as DQN.
     """
 
-    def __init__(self, capacity, **kwargs):
-        super(ReplayMemory, self).__init__(capacity)
+    def __init__(self, capacity):
+        super(DQNMemory, self).__init__(capacity)
         self.position = 0
 
     def push(self, *args):

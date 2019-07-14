@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from core.agent import Agent
-from core.memory import ReplayMemory
+from core.memory import DQNMemory
 from core.config import device
 from core.processor import CartPoleObservationProcessor
 from core.model import Model
@@ -86,7 +86,7 @@ class DQNAgent(Agent):
         else:
             return torch.tensor([[random.randrange(2)]], device=device, dtype=torch.long)
 
-    def train_model(self):
+    def _train_model(self):
         if len(self._memory) < self.BATCH_SIZE:
             return
         self._memory.generate_batch(self.BATCH_SIZE, is_sample=True)
@@ -164,8 +164,9 @@ if __name__ == "__main__":
         from pyvirtualdisplay import Display
         display = Display(visible=0, size=(1400, 900))
         display.start()
-    except Exception, e:
-        traceback.print_exc()
+    except Exception as e:
+        pass
+        # traceback.print_exc()
 
     plt.ion()
     env = gym.make('CartPole-v0').unwrapped
@@ -183,7 +184,7 @@ if __name__ == "__main__":
     dqn_model = DQNModel(screen_height, screen_width)
 
     # The memory
-    memory = ReplayMemory(10000)
+    memory = DQNMemory(10000)
 
     # dqn agent
     agent = DQNAgent(model=dqn_model, processor=processor, memory=memory)

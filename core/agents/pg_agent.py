@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 from core.agent import Agent
-from core.memory import PolicyMemory
+from core.memory import PGMemory
 from core.processor import RewardProcessor
 
 
@@ -51,8 +51,8 @@ class PGAgent(Agent):
         self._memory.log_probs.append(m.log_prob(action))
         return action.item()
 
-    def train_model(self):
-        # prepare train data
+    def _train_model(self):
+        # Prepare train data.
         policy_loss = []
         self._memory.generate_batch(self._memory.capacity)
         returns = \
@@ -60,13 +60,14 @@ class PGAgent(Agent):
         for log_prob, reward in zip(self._memory.log_probs, returns):
             policy_loss.append(-log_prob * reward)
 
-        # train ...
+        # Train ...
         self.optimizer.zero_grad()
+
         policy_loss = torch.cat(policy_loss).sum()
         policy_loss.backward()
         self.optimizer.step()
 
-        # clean the memory
+        # Clean the memory.
         self._memory.reset()
 
     def _on_episode_begin(self, env):
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     pg_model = PGModel(input_dim=env.observation_space.shape[0],
                        output_dim=env.action_space.n)
     # The memory
-    memory = PolicyMemory(10000)
+    memory = PGMemory(10000)
 
     # The processor
     processor = RewardProcessor()

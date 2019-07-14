@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from config import device
+from core.config import device
 import abc
 import numpy as np
 import torch

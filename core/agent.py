@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import abc
-import copy
 
 
 class Agent(object):
@@ -21,49 +20,39 @@ class Agent(object):
 
     def fit(self, env, n_episode=0, n_max_actions=0, is_render=False, log_interval=100):
         """
-        :param env:
-        :param n_episode:
-        :param n_max_actions:
-        :param is_render:
-        :param log_interval:
-        :return:
         """
         running_reward = 0
         for episode in range(n_episode):
-            # an episode start and environment state initialized
+            # An episode start and environment state initialized.
             state_current, ep_reward, state_anchor = self._on_episode_begin(env)
 
-            # actions start
+            # Actions start.
             for t in range(1, n_max_actions):
-
-                # do an action
+                ################################################################
+                # Generate an action.
+                ################################################################
                 self._on_action_start()
                 action = self.generate_action(state_current)
-                state_next, reward, done, _ = \
-                    env.step(self._processor.transform_action(action))
-                state_next, reward, done, state_anchor = \
-                    self._on_action_end(env, state_next, reward, done, state_anchor)
-
-                # add state to memory
-                self._memory.push(state_current, action, state_next, reward)
+                state_next, r, done, _ = env.step(self._processor.transform_action(action))
+                state_next, r, done, state_anchor = self._on_action_end(env, state_next, r, done, state_anchor)
+                ################################################################
+                # Push transition state into memory.
+                ################################################################
+                self._memory.push(state_current, action, state_next, r)
                 state_current = state_next
-                ep_reward += self._processor.transform_reward(reward)
+                ep_reward += self._processor.transform_reward(r)
 
-                if is_render:
-                    env.render()
-                if done:
-                    break
+                if is_render: env.render()
+                if done: break
 
-            self.train_model()
+            # The model will be trained only after the whole epoch ends.
+            self._train_model()
 
-            # show logs
+            # Show logs
             running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
-            if episode % log_interval == 0:
-                print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
-                    episode, ep_reward, running_reward))
+            self._log(episode, running_reward, ep_reward, log_interval)
             if running_reward > env.spec.reward_threshold:
-                print("Solved! Running reward is now {} and "
-                      "the last episode runs to {} time steps!".format(running_reward, t))
+                print("Solved! Running reward is now {} !".format(running_reward))
                 break
 
             # an episode end
@@ -72,9 +61,6 @@ class Agent(object):
     @abc.abstractmethod
     def generate_action(self, observation):
         """Watch an observation from the environment and returns the action.
-
-        :param observation:
-        :return:
         """
         pass
 
@@ -94,7 +80,7 @@ class Agent(object):
         return state_next, reward, done, state_anchor
 
     @abc.abstractmethod
-    def train_model(self):
+    def _train_model(self):
         """Train the neural network module to optimize the loss function.
         """
         pass
@@ -115,3 +101,8 @@ class Agent(object):
             overwrite (boolean): If `False` and `filepath` already exists, raises an error.
         """
         pass
+
+    def _log(self, episode, running_reward, ep_reward, log_interval):
+        if episode % log_interval == 0:
+            print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
+                episode, ep_reward, running_reward))
